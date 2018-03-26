@@ -27,7 +27,7 @@ public:
 	{
 		ifstream in(S);
 		int count = 0;
-		int temp;
+		double temp;
 
 		while (!in.eof())
 		{
@@ -65,10 +65,10 @@ public:
     
     SparseMatrix sopr()
 	{
-	SparseMatrix result = *this;
+	SparseMatrix result(this->Height(), this->Width());
     
-    for(map<pair<int, int>, double>::const_iterator p = result.data.begin();
-	 p != result.data.end(); p++)
+    for(map<pair<int, int>, double>::const_iterator p = this->data.begin();
+	 p != this->data.end(); p++)
     {
         int row = p->first.first;
         int col = p->first.second;
@@ -122,11 +122,11 @@ public:
         data[pair<int, int>(row, col)] = element;
     }
     
-    int GetElement(int row, int col) const
+    double GetElement(int row, int col) const
     {
         map<pair<int, int >, double>::const_iterator p = 
                     data.find(pair<int, int>(row, col));
-        return (p == data.end()) ? 0 : p->second;
+        return (p == data.end()) ? 0.0 : p->second;
     }
     
     void Show() const
@@ -177,7 +177,7 @@ public:
         int col = p->first.second;
         double value = p->second;
         
-        result.SetElement(row, col, value - result.GetElement(row, col));
+        result.SetElement(row, col, result.GetElement(row, col) - value);
     }
     
     return result;
@@ -193,10 +193,9 @@ SparseMatrix operator*(double k)
         int row = p->first.first;
         int col = p->first.second;
         double value = p->second;
-        
-        res.SetElement(row, col, value * k);
+        double u = k * value;
+        res.SetElement(row, col, u);
     }
-        
 		return res;
 	}
 
@@ -260,14 +259,94 @@ double operator%(const SparseMatrix& rhs)
 	}
 
 };
+/*
+void createRandomSparseMatr()
+{
+	ofstream out("matr.txt");
+	
+	srand(time(NULL)); 
+    int n = 0;
+	cout << "Enter n for random sparse matrix: "; 
+    cin >> n;
+    int **a = new int* [n];
+    for (int i = 0; i < n; i++)
+    {
+        a[i] = new int [n]; 
+    } 
+    for (int i = 0; i < n; i++)
+    {
+    	bool key = true;
+        for (int j = 0; j < n; j++)
+        {
+        	int temp = rand() % 100;
+        	if(temp >= 96)
+			{ 
+        		a[i][j] = rand() % 10;
+        		key = false;
+        	}
+			else  
+				a[i][j] = 0; 
+            out << a[i][j] << " "; 
+        }
+        if(!key) out << rand() % 10;
+        else out << 0;
+        out << '\n';
+    }
+}
+*/
 
+void createRandomSparseMatr()
+{
+	ofstream out("matr.txt");
+	
+	srand(time(NULL)); 
+    int n = 0;
+	cout << "Enter n for random sparse matrix: "; 
+    cin >> n;
+    int **a = new int* [n];
+    for (int i = 0; i < n; i++)
+    {
+        a[i] = new int [n]; 
+    }
+    int temp;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j < n; j++)
+        {
+        	if(i == j)
+			{ 
+				if(rand() % 2 == 1)	
+				{
+					a[i][j] = rand() % 10; 
+					out << a[i][j] << " ";
+        		}
+        		else 
+				{ 
+					a[i][j] = 0;
+					out << a[i][j] << " ";
+				} 
+        	}
+			else 
+			{ 
+				a[i][j] = 0;
+				out << a[i][j] << " ";
+			} 
+        }
+        if(a[i][i] != 0)
+        	out << rand() % 10 << '\n';
+        else out << 0 << '\n';
+    }
+}
 
 int main()
 {
+	createRandomSparseMatr();
 	const char* S = "matr.txt";
 	SparseMatrix Slau(S);
     SparseMatrix A = Slau.createA();
+   // A.Show();
     SparseMatrix B = Slau.createB();
+   // B.Show();
     
     SparseMatrix X(Slau.Height(), 1);
 	X.fillNumbers(0.0);
@@ -281,8 +360,9 @@ int main()
 	int count = 1;
     SparseMatrix R = A * X - B;
     double b_k = -(R%R) / ((A * R) % R);
+    
 	SparseMatrix D = R * b_k;
-	X = X + D;
+	X = X + D; 
 	while (A * X - B >= E) 
 	{
         R = A * X - B;
@@ -298,7 +378,6 @@ int main()
 	cout <<"________________________count = " <<count << endl;
 	SparseMatrix P = A * X - B;
 	P.Show();
-	
 	
 	return 0;
 }
