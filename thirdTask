@@ -15,6 +15,7 @@ using namespace std;
 class System {
 	public: 
 		double x, y;
+		
 	System(double x, double y) : x(x), y(y)
 	{}
 	System MethodOSI()
@@ -22,6 +23,16 @@ class System {
 		System res(0, 0);
 		res.x = (sin(y) - 1.6) / 2.0;
 		res.y =  0.8 - cos(0.5 + x);
+		
+		return res;
+	}
+	
+	System MethodNewton()
+	{
+		System res(0.0, 0.0);
+		
+		res.x = ((-x^2 - y^2 + 1) * cos(y + x) - 2 * y * (-sin(x + y) + 1.3*x)) / (2 * x * cos(x + y) - 2 * x * (cos(x + y) - 1.3)) + x;
+		res.y = ( 2 * x * cos(x + y) +  ) / (2 * x * cos(x + y) - 2 * x * (cos(x + y) - 1.3)) + y
 		
 		return res;
 	}
@@ -55,7 +66,7 @@ int main()
 	cout << "e = ";
 	cin >> e;
 	
-	System E(e, e);
+	/*
 	System xy(10, 10);
 	System xyn(0.0, 0.0);
 	xyn = xy.MethodOSI();
@@ -67,6 +78,8 @@ int main()
 		xyn = xyn.MethodOSI();
 	}
 	xy.Show();
+	*/
+	
 	
 	return 0;
 }
