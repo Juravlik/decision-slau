@@ -338,32 +338,60 @@ void createRandomSparseMatr()
     }
 }
 
-int main()
+
+SparseMatrix CholeskyDec(const SparseMatrix& A)
 {
-	createRandomSparseMatr();
-	const char* S = "matr.txt";
-	SparseMatrix Slau(S);
-    SparseMatrix A = Slau.createA();
-   // A.Show();
-    SparseMatrix B = Slau.createB();
-   // B.Show();
-    
-    SparseMatrix X(Slau.Height(), 1);
-	X.fillNumbers(0.0);
+    SparseMatrix L(A.Height(), A.Height());
+    L.fillNumbers(0);
+    for (int i = 0; i < A.Height(); i++)
+    {
+        double temp;
+        //Ñíà÷àëà âû÷èñëÿåì çíà÷åíèÿ ýëåìåíòîâ ñëåâà îò äèàãîíàëüíîãî ýëåìåíòà,
+        //òàê êàê ýòè çíà÷åíèÿ èñïîëüçóþòñÿ ïðè âû÷èñëåíèè äèàãîíàëüíîãî ýëåìåíòà.
+        for (int j = 0; j < i; j++)
+        {
+        	if(A.GetElement(i, j) == 0)
+        		{
+        			L.SetElement(i, j, 0);
+				}
+			else {
+			
+            temp = 0;
+            for (int k = 0; k < j; k++)
+            {
+                temp += (L.GetElement(i,k)) * (L.GetElement(j, k));
+            }
+            double temp2 = (A.GetElement(i, j) - temp) / L.GetElement(j, j);
+            L.SetElement(i, j, temp2);
+        }
+        }
 
-	cout << "Enter e: ";
-	double e;
-	cin >> e;
-	SparseMatrix E(Slau.Height(), 1);
-	E.fillNumbers(e);
+        //Íàõîäèì çíà÷åíèå äèàãîíàëüíîãî ýëåìåíòà
+        temp = A.GetElement(i, i);
+        if(temp != 0)
+    	{
+	
+	        for (int k = 0; k < i; k++)
+	        {
+	        	if(L.GetElement(i, k) != 0 && L.GetElement(i, k) != 0)
+	            	temp -= L.GetElement(i, k) * L.GetElement(i, k);
+	        }
+		}
+		if(temp >= 0) 
+       	 L.SetElement(i, i, sqrt(temp));
+    }
 
-	int count = 1;
-    SparseMatrix R = A * X - B;
+    return L;
+}
+
+SparseMatrix Start(SparseMatrix A, SparseMatrix X, SparseMatrix B, SparseMatrix E)
+{
+	SparseMatrix R = A * X - B;
     double b_k = -(R%R) / ((A * R) % R);
     
 	SparseMatrix D = R * b_k;
 	X = X + D; 
-	while (A * X - B >= E) 
+	while (A * X - B >= E)
 	{
         R = A * X - B;
         double a_k = ((R % R) * ((A * R) % D) - (R % D) * ((A * R) % R)) / 
@@ -372,12 +400,43 @@ int main()
         (((A * D) % D) * ((A * R) % R) - ((A * R) % D) * ((A * R) % D));
         D = D * a_k + R * b_k;
         X = X + D;
-		count++;
 	}
+	return X;
+}
+
+int main()
+{
+	createRandomSparseMatr();
+	const char* S = "matr.txt";
+	SparseMatrix Slau(S);
+    SparseMatrix A = Slau.createA();
+    A.SetElement(0, 0, 1);
+    //A.SetElement(1, 0, 2);
+    SparseMatrix L = CholeskyDec(A);
+    SparseMatrix L_T = L.sopr();
+    A.Show();
+    cout << "________________ "<<endl;
+    L.Show();
+    SparseMatrix B = Slau.createB();
+   // B.Show();
+    
+    SparseMatrix X(Slau.Height(), 1);
+	X.fillNumbers(0.0);
+	SparseMatrix Y(Slau.Height(), 1);
+	Y.fillNumbers(0.0);
+	
+	cout << "Enter e: ";
+	double e;
+	cin >> e;
+	SparseMatrix E(Slau.Height(), 1);
+	E.fillNumbers(e/2.0);
+	
+	Y = Start(L, Y, B, E);
+	X = Start(L_T, X, Y, E);
+		
 	X.Show();
-	cout <<"________________________count = " <<count << endl;
+	cout << "_____________________LOL________________" << endl;
 	SparseMatrix P = A * X - B;
 	P.Show();
-	
 	return 0;
 }
